@@ -4,7 +4,7 @@ import { GitBranch, MessageCircle } from 'lucide-react'
 import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Footer() {
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
 
   return (
     <footer className="py-16 px-6 border-t border-line bg-bg">
@@ -17,7 +17,7 @@ export function Footer() {
                 bg-gradient-to-br from-primary to-violet">
                 1
               </div>
-              <span className="font-semibold text-lg text-heading">OPC.one</span>
+              <span className="font-semibold text-lg text-heading">{lang === 'zh' ? '一人公司.one' : 'OPC.one'}</span>
             </div>
             <p className="text-sm leading-relaxed mb-6 text-muted">
               {t('footer.tagline')}

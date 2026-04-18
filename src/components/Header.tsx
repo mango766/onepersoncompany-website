@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu, X, Sun, Moon, Globe } from 'lucide-react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { useI18n } from '@/components/providers/I18nProvider'
+import Link from 'next/link'
 
 export function Header() {
   const { theme, toggleTheme } = useTheme()
@@ -12,8 +13,8 @@ export function Header() {
 
   const navItems = [
     { key: 'nav.products', href: '#products' },
-    { key: 'nav.tutorials', href: '#tutorials' },
-    { key: 'nav.tools', href: '#tools' },
+    { key: 'nav.tutorials', href: '/tutorials' },
+    { key: 'nav.tools', href: '/nav' },
     { key: 'nav.about', href: '#about' },
   ]
 
@@ -21,16 +22,14 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-bg/85 backdrop-blur-xl border-b border-line">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 no-underline">
+        <Link href="/" className="flex items-center gap-2 no-underline">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-primary to-violet">
             1
           </div>
           <span className="font-semibold text-lg text-heading">
-            OPC<span className="hidden sm:inline text-muted">.one</span>
+            {lang === 'zh' ? '一人公司' : 'OPC'}<span className="hidden sm:inline text-muted">.one</span>
           </span>
-        </a>
-
-        {/* Desktop Nav */}
+        </Link>
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map(item => (
             <a key={item.key} href={item.href}
