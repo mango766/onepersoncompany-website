@@ -1,5 +1,7 @@
+'use client'
+
 import { Cpu, Zap, Heart } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 const points = [
   { Icon: Cpu, iconClass: 'text-primary bg-primary/10' },

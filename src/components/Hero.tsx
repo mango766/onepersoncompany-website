@@ -1,5 +1,7 @@
+'use client'
+
 import { ArrowRight, Sparkles } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Hero() {
   const { t } = useI18n()

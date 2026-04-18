@@ -1,5 +1,7 @@
+'use client'
+
 import { ArrowRight, Clock, BookOpen } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 const tagStyles = [
   'bg-primary/10 text-primary',

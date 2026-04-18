@@ -1,7 +1,9 @@
+'use client'
+
 import { useState } from 'react'
 import { Menu, X, Sun, Moon, Globe } from 'lucide-react'
-import { useTheme } from '../theme'
-import { useI18n } from '../i18n'
+import { useTheme } from '@/components/providers/ThemeProvider'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Header() {
   const { theme, toggleTheme } = useTheme()

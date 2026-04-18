@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'
@@ -10,16 +12,25 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('opc-theme')
-    if (saved === 'light' || saved === 'dark') return saved
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  })
+  const [theme, setTheme] = useState<Theme>('light')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('opc-theme', theme)
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
+    setMounted(true)
+    const saved = localStorage.getItem('opc-theme')
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved)
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('opc-theme', theme)
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+    }
+  }, [theme, mounted])
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light')
 

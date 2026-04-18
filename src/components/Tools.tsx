@@ -1,5 +1,7 @@
+'use client'
+
 import { Code2, Palette, Megaphone, Briefcase, ExternalLink } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 interface Tool {
   name: string

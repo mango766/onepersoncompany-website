@@ -1,6 +1,8 @@
+'use client'
+
 import { useState } from 'react'
 import { Send, CheckCircle } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 export function Newsletter() {
   const { t } = useI18n()

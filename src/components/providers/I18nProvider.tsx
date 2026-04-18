@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 
 type Lang = 'en' | 'zh'
@@ -152,16 +154,25 @@ const translations: Record<string, Record<Lang, string>> = {
 const I18nContext = createContext<I18nContextType | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem('opc-lang')
-    if (saved === 'en' || saved === 'zh') return saved
-    return navigator.language.startsWith('zh') ? 'zh' : 'en'
-  })
+  const [lang, setLang] = useState<Lang>('en')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('opc-lang', lang)
-    document.documentElement.lang = lang
-  }, [lang])
+    setMounted(true)
+    const saved = localStorage.getItem('opc-lang')
+    if (saved === 'en' || saved === 'zh') {
+      setLang(saved)
+    } else if (navigator.language.startsWith('zh')) {
+      setLang('zh')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('opc-lang', lang)
+      document.documentElement.lang = lang
+    }
+  }, [lang, mounted])
 
   const t = (key: string): string => {
     return translations[key]?.[lang] ?? key

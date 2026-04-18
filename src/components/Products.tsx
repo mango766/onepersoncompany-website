@@ -1,5 +1,7 @@
+'use client'
+
 import { Package, Bot, BarChart3, ArrowUpRight } from 'lucide-react'
-import { useI18n } from '../i18n'
+import { useI18n } from '@/components/providers/I18nProvider'
 
 const products = [
   { icon: Package, color: 'text-primary bg-primary/10' },
