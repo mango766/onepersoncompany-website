@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, BookOpen, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Clock, BookOpen, ArrowRight, ArrowLeft, ExternalLink } from 'lucide-react'
 import { useI18n } from '@/components/providers/I18nProvider'
 import { tutorials } from '@/data/tutorials'
 import Link from 'next/link'
@@ -31,37 +31,71 @@ export default function TutorialsPage() {
       {/* Tutorial List */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="space-y-6">
-          {tutorials.map((t) => (
-            <Link
-              key={t.slug}
-              href={`/tutorials/${t.slug}`}
-              className="block hover-lift group rounded-2xl p-8 bg-bg-s border border-line no-underline"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${t.tagColor}`}>
-                  {t.tag}
+          {tutorials.map((t) => {
+            const isExternal = !!t.externalUrl
+            const href = isExternal ? t.externalUrl! : `/tutorials/${t.slug}`
+
+            const cardContent = (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${t.tagColor}`}>
+                    {t.tag}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted">
+                    <Clock size={12} />
+                    {t.readTime}
+                  </span>
+                  <span className="text-xs text-muted">{t.date}</span>
+                  {isExternal && (
+                    <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                      <ExternalLink size={11} />
+                      {lang === 'zh' ? '外部链接' : 'External'}
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-heading">
+                  <BookOpen size={20} className="text-primary shrink-0" />
+                  {lang === 'zh' ? t.titleZh : t.titleEn}
+                </h2>
+
+                <p className="text-sm leading-relaxed mb-4 text-body">
+                  {lang === 'zh' ? t.descZh : t.descEn}
+                </p>
+
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:gap-2 transition-all">
+                  {isExternal
+                    ? (lang === 'zh' ? '在线阅读' : 'Read online')
+                    : (lang === 'zh' ? '阅读全文' : 'Read more')
+                  } <ArrowRight size={14} />
                 </span>
-                <span className="flex items-center gap-1 text-xs text-muted">
-                  <Clock size={12} />
-                  {t.readTime}
-                </span>
-                <span className="text-xs text-muted">{t.date}</span>
-              </div>
+              </>
+            )
 
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-heading">
-                <BookOpen size={20} className="text-primary shrink-0" />
-                {lang === 'zh' ? t.titleZh : t.titleEn}
-              </h2>
+            if (isExternal) {
+              return (
+                <a
+                  key={t.slug}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover-lift group rounded-2xl p-8 bg-bg-s border border-line no-underline"
+                >
+                  {cardContent}
+                </a>
+              )
+            }
 
-              <p className="text-sm leading-relaxed mb-4 text-body">
-                {lang === 'zh' ? t.descZh : t.descEn}
-              </p>
-
-              <span className="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:gap-2 transition-all">
-                {lang === 'zh' ? '阅读全文' : 'Read more'} <ArrowRight size={14} />
-              </span>
-            </Link>
-          ))}
+            return (
+              <Link
+                key={t.slug}
+                href={href}
+                className="block hover-lift group rounded-2xl p-8 bg-bg-s border border-line no-underline"
+              >
+                {cardContent}
+              </Link>
+            )
+          })}
         </div>
       </div>
     </div>
