@@ -14,9 +14,10 @@ const translations: Record<string, Record<Lang, string>> = {
   // Nav
   'nav.products': { en: 'Products', zh: '产品' },
   'nav.tutorials': { en: 'Tutorials', zh: '教程' },
-  'nav.tools': { en: 'Tools', zh: '工具' },
+  'nav.tools': { en: 'AI Tools', zh: 'AI工具导航' },
   'nav.about': { en: 'About', zh: '关于' },
   'nav.blog': { en: 'Blog', zh: '博客' },
+  'nav.contact': { en: 'Contact', zh: '联系我' },
 
   // Hero
   'hero.badge': { en: 'Build. Launch. Scale. Alone.', zh: '构建 / 发布 / 扩展 / 独立完成' },

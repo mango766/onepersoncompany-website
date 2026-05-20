@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowLeft, ExternalLink, Sparkles, Code2, Palette, Megaphone, Briefcase, Bot, Database, Globe, CreditCard, BarChart3, Mail, Wrench, Cpu, Layers } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Sparkles, Code2, Palette, Megaphone, Bot, Database, Globe, CreditCard, Copy, Check } from 'lucide-react'
+import { useState } from 'react'
 import { useI18n } from '@/components/providers/I18nProvider'
 import Link from 'next/link'
 
@@ -9,6 +10,7 @@ interface NavItem {
   desc: string
   descZh: string
   url: string
+  domain: string
   hot?: boolean
 }
 
@@ -22,161 +24,111 @@ interface NavCategory {
 
 const categories: NavCategory[] = [
   {
+    titleEn: 'AI Chat & Assistants',
+    titleZh: 'AI 对话助手',
+    icon: <Sparkles size={20} />,
+    iconClass: 'text-primary bg-primary/10',
+    items: [
+      { name: 'ChatGPT', desc: 'The most versatile AI assistant — writing, analysis, coding', descZh: '综合能力最强，写作/分析/编程一站式搞定', url: 'https://chat.openai.com', domain: 'openai.com', hot: true },
+      { name: 'Claude', desc: 'Best for long-context reading and serious coding', descZh: '长文本和代码能力天花板，程序员首选', url: 'https://claude.ai', domain: 'claude.ai', hot: true },
+      { name: 'Kimi', desc: '2M token context, free — kills PDFs and contracts', descZh: '国产200万字长文本王者，读论文合同神器，免费', url: 'https://kimi.moonshot.cn', domain: 'moonshot.cn' },
+      { name: 'DeepSeek', desc: 'o1-level reasoning at 10x cheaper API price', descZh: '推理能力对标o1，API价格便宜10倍', url: 'https://chat.deepseek.com', domain: 'deepseek.com', hot: true },
+    ],
+  },
+  {
     titleEn: 'AI Coding',
     titleZh: 'AI 编程',
     icon: <Code2 size={20} />,
-    iconClass: 'text-primary bg-primary/10',
-    items: [
-      { name: 'Cursor', desc: 'AI-powered code editor', descZh: 'AI代码编辑器', url: 'https://cursor.com', hot: true },
-      { name: 'Claude Code', desc: 'CLI coding agent by Anthropic', descZh: 'Anthropic命令行编码Agent', url: 'https://claude.ai', hot: true },
-      { name: 'GitHub Copilot', desc: 'AI pair programmer', descZh: 'AI结对编程', url: 'https://github.com/features/copilot' },
-      { name: 'v0', desc: 'AI UI component generator', descZh: 'AI UI组件生成器', url: 'https://v0.dev', hot: true },
-      { name: 'Bolt.new', desc: 'Full-stack app in browser', descZh: '浏览器内全栈开发', url: 'https://bolt.new' },
-      { name: 'Replit', desc: 'AI-powered cloud IDE', descZh: 'AI云端IDE', url: 'https://replit.com' },
-    ],
-  },
-  {
-    titleEn: 'AI Models & API',
-    titleZh: 'AI 模型 & API',
-    icon: <Cpu size={20} />,
     iconClass: 'text-violet bg-violet/10',
     items: [
-      { name: 'OpenAI API', desc: 'GPT-4o, DALL-E, Whisper', descZh: 'GPT-4o, DALL-E, Whisper', url: 'https://platform.openai.com', hot: true },
-      { name: 'Anthropic API', desc: 'Claude models API', descZh: 'Claude模型API', url: 'https://console.anthropic.com' },
-      { name: 'Google AI Studio', desc: 'Gemini models', descZh: 'Gemini模型', url: 'https://aistudio.google.com' },
-      { name: 'Hugging Face', desc: 'Open-source AI models hub', descZh: '开源AI模型中心', url: 'https://huggingface.co', hot: true },
-      { name: 'Replicate', desc: 'Run ML models via API', descZh: 'API运行ML模型', url: 'https://replicate.com' },
-      { name: 'Together AI', desc: 'Fast open-source model inference', descZh: '快速开源模型推理', url: 'https://together.ai' },
-      { name: 'Groq', desc: 'Ultra-fast LLM inference', descZh: '超快LLM推理', url: 'https://groq.com' },
-      { name: 'DeepSeek', desc: 'Efficient reasoning models', descZh: '高效推理模型', url: 'https://deepseek.com' },
+      { name: 'Cursor', desc: 'AI-first editor — $20/mo pays for itself in an hour', descZh: '一次性写完一个功能，$20月费一小时回本', url: 'https://cursor.com', domain: 'cursor.com', hot: true },
+      { name: 'Claude Code', desc: 'Terminal coding agent — reads, edits, tests on its own', descZh: '终端里的编码Agent，自己读代码自己改自己跑测试', url: 'https://claude.com/claude-code', domain: 'anthropic.com', hot: true },
+      { name: 'v0', desc: 'Chat → shippable React components', descZh: '一句话出可用React组件，UI再也不用从零写', url: 'https://v0.dev', domain: 'v0.dev' },
+      { name: 'Bolt.new', desc: 'Full-stack apps generated and deployed in browser', descZh: '浏览器内生成并部署全栈应用，做demo最快', url: 'https://bolt.new', domain: 'bolt.new' },
     ],
   },
   {
-    titleEn: 'AI Design & Creative',
-    titleZh: 'AI 设计 & 创意',
+    titleEn: 'AI Workflow & Agents',
+    titleZh: 'AI 工作流 & Agent',
+    icon: <Bot size={20} />,
+    iconClass: 'text-orange-500 bg-orange-500/10',
+    items: [
+      { name: '扣子 Coze', desc: 'ByteDance no-code bot builder — richest CN ecosystem', descZh: '字节出品，拖拽搭Bot，接飞书/公众号/抖音，国内生态最全', url: 'https://www.coze.cn', domain: 'coze.cn', hot: true },
+      { name: 'Dify', desc: 'Self-hostable LLM app platform for enterprises', descZh: '开源自部署，企业内AI应用首选，可视化编排RAG', url: 'https://dify.ai', domain: 'dify.ai', hot: true },
+      { name: 'n8n', desc: 'Open-source Zapier — 600+ integrations, self-controlled', descZh: '开源版Zapier，600+集成，自建自控不受制于人', url: 'https://n8n.io', domain: 'n8n.io' },
+      { name: 'Make', desc: 'Visual automation — 10x more power than Zapier', descZh: '可视化自动化天花板，复杂流程比Zapier强10倍', url: 'https://make.com', domain: 'make.com' },
+    ],
+  },
+  {
+    titleEn: 'AI Writing & Content',
+    titleZh: 'AI 写作 & 内容',
+    icon: <Megaphone size={20} />,
+    iconClass: 'text-pink-500 bg-pink-500/10',
+    items: [
+      { name: '秘塔AI搜索', desc: 'Chinese AI search with citations — no hallucinations', descZh: '中文搜索+写作最优解，结果带参考来源，写稿不翻车', url: 'https://metaso.cn', domain: 'metaso.cn', hot: true },
+      { name: 'Notion AI', desc: 'AI inside your docs — saves an hour every day', descZh: '文档里直接改写总结，工作流无缝，每天省1小时', url: 'https://notion.so', domain: 'notion.so' },
+      { name: 'Gamma', desc: 'Ship usable presentations from one prompt', descZh: '一句话生成可用PPT，甩开传统模板10条街', url: 'https://gamma.app', domain: 'gamma.app' },
+    ],
+  },
+  {
+    titleEn: 'AI Image & Video',
+    titleZh: 'AI 图像 & 视频',
     icon: <Palette size={20} />,
     iconClass: 'text-accent bg-accent/10',
     items: [
-      { name: 'Midjourney', desc: 'AI image generation', descZh: 'AI图像生成', url: 'https://midjourney.com', hot: true },
-      { name: 'Figma', desc: 'Collaborative UI design', descZh: '协作式UI设计', url: 'https://figma.com' },
-      { name: 'Canva', desc: 'Quick graphics & design', descZh: '快速图形设计', url: 'https://canva.com' },
-      { name: 'Framer', desc: 'AI website builder', descZh: 'AI网站构建器', url: 'https://framer.com' },
-      { name: 'Gamma', desc: 'AI presentation maker', descZh: 'AI演示文稿', url: 'https://gamma.app' },
-      { name: 'Runway', desc: 'AI video generation', descZh: 'AI视频生成', url: 'https://runwayml.com' },
+      { name: 'Midjourney', desc: 'Commercial-grade image generation — top aesthetics', descZh: '商用出图天花板，审美在线，做营销素材首选', url: 'https://midjourney.com', domain: 'midjourney.com', hot: true },
+      { name: '即梦 AI', desc: 'ByteDance image + video, CN-friendly, free tier', descZh: '字节文生图+文生视频，中文提示词友好，免费额度够用', url: 'https://jimeng.jianying.com', domain: 'jianying.com' },
+      { name: '可灵 AI', desc: 'Best Chinese text-to-video — close to Sora quality', descZh: '快手出品，国内文生视频目前最能打，动态接近Sora', url: 'https://klingai.com', domain: 'klingai.com', hot: true },
+      { name: 'Runway', desc: 'Video editing + AI generation in one suite', descZh: '视频编辑+AI生成一体化，海外做短片的标准', url: 'https://runwayml.com', domain: 'runwayml.com' },
     ],
   },
   {
-    titleEn: 'Full-Stack & Backend',
-    titleZh: '全栈 & 后端',
+    titleEn: 'Dev & Deploy',
+    titleZh: '开发 & 部署',
     icon: <Database size={20} />,
     iconClass: 'text-emerald bg-emerald/10',
     items: [
-      { name: 'Supabase', desc: 'Open-source Firebase alternative', descZh: '开源Firebase替代', url: 'https://supabase.com', hot: true },
-      { name: 'Vercel', desc: 'Deploy & host frontend', descZh: '前端部署托管', url: 'https://vercel.com', hot: true },
-      { name: 'Cloudflare', desc: 'CDN, DNS, Workers', descZh: 'CDN, DNS, Workers', url: 'https://cloudflare.com' },
-      { name: 'Railway', desc: 'Deploy backend services', descZh: '后端服务部署', url: 'https://railway.app' },
-      { name: 'Upstash', desc: 'Serverless Redis & Kafka', descZh: 'Serverless Redis', url: 'https://upstash.com' },
-      { name: 'Neon', desc: 'Serverless PostgreSQL', descZh: 'Serverless PostgreSQL', url: 'https://neon.tech' },
-      { name: 'PlanetScale', desc: 'Serverless MySQL', descZh: 'Serverless MySQL', url: 'https://planetscale.com' },
+      { name: 'Vercel', desc: 'Git push = live site. Zero-config frontend hosting', descZh: 'Push代码自动上线，前端部署零心智负担，免费额度够用', url: 'https://vercel.com', domain: 'vercel.com', hot: true },
+      { name: 'Supabase', desc: 'Open-source Firebase — DB + Auth + Storage', descZh: '开源Firebase替代，数据库+Auth+存储一站式，SQL可控', url: 'https://supabase.com', domain: 'supabase.com', hot: true },
+      { name: 'Cloudflare', desc: 'Free CDN, DNS, Workers — saves you a server', descZh: 'CDN/DNS/Workers全免费，全球加速+防护，省一台服务器钱', url: 'https://cloudflare.com', domain: 'cloudflare.com' },
+      { name: 'Resend', desc: 'Developer-first email — send mail in 3 lines', descZh: '开发者邮件服务，API 3行代码发邮件，告别SendGrid的坑', url: 'https://resend.com', domain: 'resend.com' },
     ],
   },
   {
     titleEn: 'Payment & Revenue',
-    titleZh: '支付 & 收入',
+    titleZh: '支付 & 变现',
     icon: <CreditCard size={20} />,
     iconClass: 'text-green-500 bg-green-500/10',
     items: [
-      { name: 'Stripe', desc: 'Global payment processing', descZh: '全球支付处理', url: 'https://stripe.com', hot: true },
-      { name: 'Lemon Squeezy', desc: 'All-in-one digital sales', descZh: '一站式数字商品销售', url: 'https://lemonsqueezy.com' },
-      { name: 'Gumroad', desc: 'Sell digital products', descZh: '销售数字产品', url: 'https://gumroad.com' },
-      { name: 'Paddle', desc: 'B2B SaaS billing', descZh: 'B2B SaaS计费', url: 'https://paddle.com' },
-      { name: 'Buy Me a Coffee', desc: 'Creator monetization', descZh: '创作者打赏', url: 'https://buymeacoffee.com' },
+      { name: 'Stripe', desc: 'Only real answer for global SaaS payments', descZh: '海外收款唯一解，独立开发者做SaaS必备', url: 'https://stripe.com', domain: 'stripe.com', hot: true },
+      { name: 'Creem', desc: 'Stripe alternative that is friendly to CN devs', descZh: 'Stripe替代方案，对中国开发者友好，不用美国公司也能收款', url: 'https://creem.io', domain: 'creem.io' },
+      { name: 'Lemon Squeezy', desc: 'Merchant of Record — handles global tax for you', descZh: 'MoR模式帮你搞定全球税务，卖数字产品省心', url: 'https://lemonsqueezy.com', domain: 'lemonsqueezy.com' },
     ],
   },
   {
-    titleEn: 'Analytics & SEO',
-    titleZh: '分析 & SEO',
-    icon: <BarChart3 size={20} />,
-    iconClass: 'text-blue-500 bg-blue-500/10',
-    items: [
-      { name: 'PostHog', desc: 'Product analytics & experiments', descZh: '产品分析与实验', url: 'https://posthog.com', hot: true },
-      { name: 'Plausible', desc: 'Privacy-friendly analytics', descZh: '隐私友好分析', url: 'https://plausible.io' },
-      { name: 'Ahrefs', desc: 'SEO research & backlinks', descZh: 'SEO研究与外链', url: 'https://ahrefs.com' },
-      { name: 'Google Search Console', desc: 'Free SEO insights', descZh: '免费SEO洞察', url: 'https://search.google.com/search-console' },
-      { name: 'Hotjar', desc: 'Heatmaps & recordings', descZh: '热力图和录屏', url: 'https://hotjar.com' },
-    ],
-  },
-  {
-    titleEn: 'Email & Marketing',
-    titleZh: '邮件 & 营销',
-    icon: <Mail size={20} />,
-    iconClass: 'text-pink-500 bg-pink-500/10',
-    items: [
-      { name: 'Resend', desc: 'Developer-first email API', descZh: '开发者优先邮件API', url: 'https://resend.com', hot: true },
-      { name: 'Beehiiv', desc: 'Newsletter platform', descZh: 'Newsletter平台', url: 'https://beehiiv.com' },
-      { name: 'Typefully', desc: 'Twitter/X growth tool', descZh: 'Twitter/X增长工具', url: 'https://typefully.com' },
-      { name: 'Buffer', desc: 'Social media scheduling', descZh: '社交媒体排程', url: 'https://buffer.com' },
-      { name: 'ConvertKit', desc: 'Creator email marketing', descZh: '创作者邮件营销', url: 'https://convertkit.com' },
-    ],
-  },
-  {
-    titleEn: 'AI Agents & Automation',
-    titleZh: 'AI Agent & 自动化',
-    icon: <Bot size={20} />,
-    iconClass: 'text-orange-500 bg-orange-500/10',
-    items: [
-      { name: 'LangChain', desc: 'LLM application framework', descZh: 'LLM应用框架', url: 'https://langchain.com' },
-      { name: 'CrewAI', desc: 'Multi-agent orchestration', descZh: '多Agent编排', url: 'https://crewai.com' },
-      { name: 'n8n', desc: 'Workflow automation', descZh: '工作流自动化', url: 'https://n8n.io', hot: true },
-      { name: 'Make (Integromat)', desc: 'Visual automation', descZh: '可视化自动化', url: 'https://make.com' },
-      { name: 'Zapier', desc: 'Connect 6000+ apps', descZh: '连接6000+应用', url: 'https://zapier.com' },
-      { name: 'Dify', desc: 'Open-source LLM app builder', descZh: '开源LLM应用构建', url: 'https://dify.ai' },
-    ],
-  },
-  {
-    titleEn: 'SaaS Boilerplates',
-    titleZh: 'SaaS 模板',
-    icon: <Layers size={20} />,
-    iconClass: 'text-cyan-500 bg-cyan-500/10',
-    items: [
-      { name: 'ShipFast', desc: 'Next.js SaaS boilerplate by Marc Lou', descZh: 'Marc Lou的Next.js SaaS模板', url: 'https://shipfa.st', hot: true },
-      { name: 'Shipixen', desc: 'AI-generated landing pages', descZh: 'AI生成落地页', url: 'https://shipixen.com' },
-      { name: 'SaaSfly', desc: 'Open-source Next.js starter', descZh: '开源Next.js启动模板', url: 'https://saasfly.io' },
-      { name: 'shadcn/ui', desc: 'Beautiful UI components', descZh: '精美UI组件库', url: 'https://ui.shadcn.com', hot: true },
-      { name: 'Tailwind UI', desc: 'Premium Tailwind components', descZh: '高级Tailwind组件', url: 'https://tailwindui.com' },
-    ],
-  },
-  {
-    titleEn: 'Community & Learning',
-    titleZh: '社区 & 学习',
+    titleEn: 'Launch & Community',
+    titleZh: '获客 & 社区',
     icon: <Globe size={20} />,
     iconClass: 'text-teal-500 bg-teal-500/10',
     items: [
-      { name: 'Indie Hackers', desc: 'Solopreneur community', descZh: '独立创业者社区', url: 'https://indiehackers.com', hot: true },
-      { name: 'Product Hunt', desc: 'Launch your product', descZh: '发布你的产品', url: 'https://producthunt.com' },
-      { name: 'Hacker News', desc: 'Tech news & discussion', descZh: '科技新闻与讨论', url: 'https://news.ycombinator.com' },
-      { name: 'SkillHub', desc: 'AI skills marketplace', descZh: 'AI技能市场', url: 'https://skillhub.com' },
-      { name: 'Buildspace', desc: 'Builder community', descZh: '构建者社区', url: 'https://buildspace.so' },
-    ],
-  },
-  {
-    titleEn: 'Productivity & Business',
-    titleZh: '效率 & 商业',
-    icon: <Wrench size={20} />,
-    iconClass: 'text-gray-500 bg-gray-500/10',
-    items: [
-      { name: 'Notion', desc: 'All-in-one workspace', descZh: '全能工作空间', url: 'https://notion.so' },
-      { name: 'Linear', desc: 'Project management for devs', descZh: '开发者项目管理', url: 'https://linear.app' },
-      { name: 'Cal.com', desc: 'Open-source scheduling', descZh: '开源日程调度', url: 'https://cal.com' },
-      { name: 'Stripe Atlas', desc: 'Incorporate your company', descZh: '一站式注册公司', url: 'https://stripe.com/atlas' },
-      { name: 'Mercury', desc: 'Startup banking', descZh: '创业者银行', url: 'https://mercury.com' },
-      { name: 'Crisp', desc: 'Customer support chat', descZh: '客户支持聊天', url: 'https://crisp.chat' },
+      { name: 'Product Hunt', desc: 'One Launch = a month of SEO. Must-do globally', descZh: '海外冷启动必经之地，一次Launch顶一个月SEO', url: 'https://producthunt.com', domain: 'producthunt.com', hot: true },
+      { name: 'Indie Hackers', desc: 'Solopreneur community — revenue-sharing, not alone', descZh: '独立开发者社区，分享收入和经验，路上不孤单', url: 'https://indiehackers.com', domain: 'indiehackers.com' },
+      { name: '即刻', desc: 'Chinese indie maker hub — find seed users here', descZh: '国内独立开发者聚集地，产品冷启动+找种子用户', url: 'https://okjike.com', domain: 'okjike.com' },
     ],
   },
 ]
 
 export default function NavPage() {
   const { lang } = useI18n()
+  const [copied, setCopied] = useState(false)
+
+  const copyWechat = async () => {
+    try {
+      await navigator.clipboard.writeText('LIR--3point14')
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
 
   return (
     <div className="min-h-screen bg-bg">
@@ -190,13 +142,13 @@ export default function NavPage() {
           <div className="flex items-center gap-3 mb-4">
             <Sparkles size={28} className="text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold text-heading">
-              {lang === 'zh' ? '精品导航' : 'Curated Directory'}
+              {lang === 'zh' ? 'AI工具导航' : 'AI Tools Directory'}
             </h1>
           </div>
           <p className="text-lg text-body max-w-2xl">
             {lang === 'zh'
-              ? '一人公司必备的AI工具、API、开发资源和创业服务。每一个都是精挑细选，帮你用最少的成本做最大的事。'
-              : 'Essential AI tools, APIs, dev resources and startup services for solopreneurs. Hand-picked to help you do more with less.'}
+              ? '一人公司实战验证的AI工具精选。每个都经过实际使用，直击具体痛点——不是大杂烩，是确实能帮你做事的。'
+              : 'Battle-tested AI tools for solopreneurs. Every pick used in anger — no fluff, just the ones that actually ship results.'}
           </p>
         </div>
       </div>
@@ -232,7 +184,7 @@ export default function NavPage() {
               <span className="text-xs text-muted bg-bg-t px-2 py-1 rounded-full">{cat.items.length}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {cat.items.map((item, j) => (
                 <a
                   key={j}
@@ -240,8 +192,14 @@ export default function NavPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative flex items-start gap-3 p-4 rounded-xl no-underline
-                    bg-bg-s border border-line-light hover:border-line hover:scale-[1.02] transition-all"
+                    bg-bg-s border border-line-light hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all"
                 >
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${item.domain}&sz=64`}
+                    alt=""
+                    className="w-10 h-10 rounded-lg shrink-0 bg-bg-t p-1.5"
+                    loading="lazy"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-heading truncate">{item.name}</span>
@@ -249,7 +207,7 @@ export default function NavPage() {
                         <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500">HOT</span>
                       )}
                     </div>
-                    <p className="text-xs text-muted leading-relaxed">
+                    <p className="text-xs text-muted leading-relaxed line-clamp-2">
                       {lang === 'zh' ? item.descZh : item.desc}
                     </p>
                   </div>
@@ -261,13 +219,46 @@ export default function NavPage() {
         ))}
       </div>
 
+      {/* Contact CTA */}
+      <div className="max-w-6xl mx-auto px-6 pb-8">
+        <div className="rounded-2xl border border-line-light bg-gradient-to-br from-primary/5 via-violet/5 to-accent/5 p-8 text-center">
+          <h3 className="text-2xl font-bold text-heading mb-2">
+            {lang === 'zh' ? '想聊聊一人公司？' : 'Want to chat about solopreneur life?'}
+          </h3>
+          <p className="text-sm text-body mb-6 max-w-xl mx-auto">
+            {lang === 'zh'
+              ? '有新工具推荐、合作想法，或者单纯想交流独立开发 —— 加我微信，直接聊'
+              : 'Tool recommendations, collab ideas, or just want to talk indie dev — hit me up on WeChat'}
+          </p>
+          <button
+            onClick={copyWechat}
+            className="group inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-bg-s border border-line hover:border-primary hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer"
+          >
+            <span className="text-xs text-muted uppercase tracking-wider">
+              {lang === 'zh' ? '微信' : 'WeChat'}
+            </span>
+            <span className="text-base font-mono font-semibold text-heading">LIR--3point14</span>
+            {copied ? (
+              <Check size={18} className="text-emerald" />
+            ) : (
+              <Copy size={16} className="text-muted group-hover:text-primary transition-colors" />
+            )}
+          </button>
+          {copied && (
+            <p className="text-xs text-emerald mt-3">
+              {lang === 'zh' ? '已复制到剪贴板，打开微信搜索添加 ✓' : 'Copied! Search this ID on WeChat ✓'}
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Footer note */}
       <div className="max-w-6xl mx-auto px-6 pb-16">
         <div className="text-center py-8 border-t border-line">
           <p className="text-sm text-muted">
             {lang === 'zh'
-              ? '持续更新中 · 发现好工具？欢迎推荐'
-              : 'Continuously updated · Found a great tool? Let us know'}
+              ? '精选 · 持续更新 · 发现更好的工具？欢迎推荐'
+              : 'Curated · Continuously updated · Found a better tool? Let us know'}
           </p>
         </div>
       </div>

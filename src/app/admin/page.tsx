@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Eye, Users, Globe, MapPin, Clock, RefreshCw,
-  TrendingUp, ExternalLink, Monitor, Lock, LogIn
+  TrendingUp, ExternalLink, Monitor, Lock, LogIn, Mail
 } from 'lucide-react'
 
 interface Stats {
@@ -34,6 +34,42 @@ interface VisitorsResponse {
   total: number
   page: number
   totalPages: number
+}
+
+interface Subscriber {
+  id: number
+  email: string
+  source: string | null
+  country: string | null
+  city: string | null
+  created_at: string
+  confirmed: boolean
+  unsubscribed: boolean
+}
+
+interface SubscribersResponse {
+  summary: { total: number; active: number; unsubscribed: number; todayNew: number }
+  bySource: Record<string, number>
+  byCountry: Record<string, number>
+  subscribers: Subscriber[]
+}
+
+interface Subscriber {
+  id: number
+  email: string
+  source: string | null
+  country: string | null
+  city: string | null
+  created_at: string
+  confirmed: boolean
+  unsubscribed: boolean
+}
+
+interface SubscribersResponse {
+  summary: { total: number; active: number; unsubscribed: number; todayNew: number }
+  bySource: Record<string, number>
+  byCountry: Record<string, number>
+  subscribers: Subscriber[]
 }
 
 // Country code to emoji flag
@@ -74,20 +110,23 @@ export default function AdminPage() {
   const [adminKey, setAdminKey] = useState('')
   const [stats, setStats] = useState<Stats | null>(null)
   const [visitors, setVisitors] = useState<VisitorsResponse | null>(null)
+  const [subs, setSubs] = useState<SubscribersResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [visitorPage, setVisitorPage] = useState(1)
-  const [tab, setTab] = useState<'overview' | 'visitors'>('overview')
+  const [tab, setTab] = useState<'overview' | 'visitors' | 'subscribers'>('overview')
 
   const fetchData = useCallback(async (key: string) => {
     setLoading(true)
     try {
-      const [statsRes, visitorsRes] = await Promise.all([
+      const [statsRes, visitorsRes, subsRes] = await Promise.all([
         fetch(`/api/stats?key=${key}`),
         fetch(`/api/stats/visitors?key=${key}&page=${visitorPage}&limit=30`),
+        fetch(`/api/stats/subscribers?key=${key}`),
       ])
 
       if (statsRes.ok) setStats(await statsRes.json())
       if (visitorsRes.ok) setVisitors(await visitorsRes.json())
+      if (subsRes.ok) setSubs(await subsRes.json())
     } catch (err) {
       console.error('Fetch error:', err)
     } finally {
@@ -170,6 +209,20 @@ export default function AdminPage() {
               Visitors
             </button>
             <button
+              onClick={() => setTab('subscribers')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors
+                ${tab === 'subscribers' ? 'bg-primary/10 text-primary' : 'bg-transparent text-body hover:text-heading'}`}
+            >
+              Subscribers
+            </button>
+            <button
+              onClick={() => setTab('subscribers')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors
+                ${tab === 'subscribers' ? 'bg-primary/10 text-primary' : 'bg-transparent text-body hover:text-heading'}`}
+            >
+              Subscribers
+            </button>
+            <button
               onClick={() => fetchData(adminKey)}
               disabled={loading}
               className="p-2 rounded-lg text-body hover:text-heading hover:bg-bg-t transition-colors cursor-pointer border-none bg-transparent"
@@ -185,7 +238,7 @@ export default function AdminPage() {
           <div className="text-center py-20 text-muted">Loading...</div>
         ) : tab === 'overview' ? (
           <OverviewTab stats={stats} />
-        ) : (
+        ) : tab === 'visitors' ? (
           <VisitorsTab
             visitors={visitors}
             page={visitorPage}
@@ -194,6 +247,8 @@ export default function AdminPage() {
               fetchData(adminKey)
             }}
           />
+        ) : (
+          <SubscribersTab subs={subs} />
         )}
       </main>
     </div>
@@ -400,5 +455,144 @@ function VisitorsTab({ visitors, page, onPageChange }: {
         </div>
       )}
     </div>
+  )
+}
+
+function SubscribersTab({ subs }: { subs: SubscribersResponse | null }) {
+  if (!subs) return <div className="text-center py-20 text-muted">Loading subscribers...</div>
+
+  const { summary, bySource, byCountry, subscribers } = subs
+
+  return (
+    <div className="space-y-6">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="总订阅数" value={summary.total} icon={<Mail size={18} />} />
+        <StatCard label="活跃订阅" value={summary.active} icon={<Users size={18} />} accent />
+        <StatCard label="今日新增" value={summary.todayNew} icon={<TrendingUp size={18} />} />
+        <StatCard label="已退订" value={summary.unsubscribed} icon={<ExternalLink size={18} />} />
+      </div>
+
+      {/* Breakdown */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="rounded-xl p-5 bg-bg-s border border-line">
+          <h3 className="text-sm font-semibold text-heading mb-3">订阅来源</h3>
+          {Object.keys(bySource).length === 0 ? (
+            <p className="text-xs text-muted">暂无数据</p>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(bySource)
+                .sort(([, a], [, b]) => b - a)
+                .map(([src, n]) => (
+                  <div key={src} className="flex items-center justify-between text-sm">
+                    <span className="text-body">{src}</span>
+                    <span className="font-mono text-heading">{n}</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+        <div className="rounded-xl p-5 bg-bg-s border border-line">
+          <h3 className="text-sm font-semibold text-heading mb-3">国家分布</h3>
+          {Object.keys(byCountry).length === 0 ? (
+            <p className="text-xs text-muted">暂无数据</p>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(byCountry)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10)
+                .map(([c, n]) => (
+                  <div key={c} className="flex items-center justify-between text-sm">
+                    <span className="text-body">
+                      {c !== 'unknown' ? `${countryFlag(c)} ${c}` : '未知'}
+                    </span>
+                    <span className="font-mono text-heading">{n}</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Subscribers table */}
+      <div className="rounded-xl bg-bg-s border border-line overflow-hidden">
+        <div className="px-5 py-3 border-b border-line flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-heading">订阅列表（最近 {subscribers.length} 条）</h3>
+          <CopyEmailsButton emails={subscribers.filter(s => !s.unsubscribed).map(s => s.email)} />
+        </div>
+        {subscribers.length === 0 ? (
+          <p className="text-center py-12 text-sm text-muted">还没有订阅者，等发小红书/即刻后会有人来 👀</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-bg-t text-muted text-xs">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">邮箱</th>
+                  <th className="text-left px-4 py-2 font-medium">来源</th>
+                  <th className="text-left px-4 py-2 font-medium">地区</th>
+                  <th className="text-left px-4 py-2 font-medium">状态</th>
+                  <th className="text-left px-4 py-2 font-medium">时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscribers.map(s => (
+                  <tr key={s.id} className="border-t border-line-light hover:bg-bg transition-colors">
+                    <td className="px-4 py-2 font-mono text-heading">{s.email}</td>
+                    <td className="px-4 py-2 text-body">{s.source || '—'}</td>
+                    <td className="px-4 py-2 text-body">
+                      {s.country
+                        ? `${countryFlag(s.country)}${s.city ? ' ' + s.city : ''}`
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-2">
+                      {s.unsubscribed ? (
+                        <span className="px-2 py-0.5 rounded text-xs bg-red-500/10 text-red-500">已退订</span>
+                      ) : s.confirmed ? (
+                        <span className="px-2 py-0.5 rounded text-xs bg-emerald/10 text-emerald">已确认</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-xs bg-primary/10 text-primary">活跃</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-muted text-xs">{formatTime(s.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function StatCard({ label, value, icon, accent }: { label: string; value: number; icon: React.ReactNode; accent?: boolean }) {
+  return (
+    <div className={`rounded-xl p-5 border ${accent ? 'border-primary/30 bg-primary/5' : 'border-line bg-bg-s'}`}>
+      <div className="flex items-center gap-2 text-muted text-xs mb-2">
+        {icon}
+        {label}
+      </div>
+      <div className="text-2xl font-bold text-heading font-mono">{value}</div>
+    </div>
+  )
+}
+
+function CopyEmailsButton({ emails }: { emails: string[] }) {
+  const [copied, setCopied] = useState(false)
+  const doCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(emails.join(', '))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+  if (emails.length === 0) return null
+  return (
+    <button
+      onClick={doCopy}
+      className="px-3 py-1 rounded-md text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer border-none"
+    >
+      {copied ? '✓ 已复制' : `复制 ${emails.length} 个邮箱`}
+    </button>
   )
 }
